@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Detalles de la Tarea</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            color: #333;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+        }
+        .task-status {
+            margin-right: 15px;
+            font-size: 1.5em;
+        }
+        .task-info { 
+            background-color: #f9f9f9; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin-bottom: 20px;
+        }
+        .task-info p { 
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        .task-description {
+            white-space: pre-wrap;
+        }
+        .task-meta {
+            font-size: 14px;
+            color: #666;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .btn { 
+            display: inline-block; 
+            padding: 8px 12px; 
+            background-color: #4CAF50; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 4px;
+            margin-right: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary { background-color: #2196F3; }
+        .btn-danger { background-color: #f44336; }
+        .btn-secondary { background-color: #9e9e9e; }
+        .actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .due-date {
+            font-weight: bold;
+        }
+        .overdue {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <form method="post" action="{{ url_for('toggle_task', task_id=task.id) }}" class="task-status">
+                <button type="submit" style="background: none; border: none; cursor: pointer; padding: 0;">
+                    {% if task.completed %}
+                    <span>☑️</span>
+                    {% else %}
+                    <span>☐</span>
+                    {% endif %}
+                </button>
+            </form>
+            {{ task.title }}
+        </h1>
+        
+        <div class="task-info">
+            {% if task.description %}
+            <p class="task-description">{{ task.description }}</p>
+            {% else %}
+            <p><em>Sin descripción</em></p>
+            {% endif %}
+            
+            <div class="task-meta">
+                {% if task.due_date %}
+                    {% set today = now().strftime('%Y-%m-%d') %}
+                    <p>
+                        <strong>Fecha de vencimiento:</strong> 
+                        <span class="due-date {{ 'overdue' if task.due_date < today and not task.completed }}">
+                            {{ task.due_date }}
+                            {% if task.due_date < today and not task.completed %}
+                                (¡Vencida!)
+                            {% endif %}
+                        </span>
+                    </p>
+                {% endif %}
+                <p><strong>Estado:</strong> {{ 'Completada' if task.completed else 'Pendiente' }}</p>
+                <p><strong>Creada:</strong> {{ task.created_at.split('T')[0] if task.created_at else 'Desconocido' }}</p>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn btn-primary">Editar</a>
+            <form method="post" action="{{ url_for('toggle_task', task_id=task.id) }}" style="display:inline;">
+                <button type="submit" class="btn">
+                    {% if task.completed %}
+                    Marcar como pendiente
+                    {% else %}
+                    Marcar como completada
+                    {% endif %}
+                </button>
+            </form>
+            <form method="post" action="{{ url_for('delete_task', task_id=task.id) }}" style="display:inline;">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Estás seguro de eliminar esta tarea?')">Eliminar</button>
+            </form>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Volver</a>
+        </div>
+    </div>
+</body>
+</html>
